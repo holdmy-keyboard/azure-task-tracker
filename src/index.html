@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Azure Task Tracker</title>
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <main class="container">
+
+        <header>
+            <p class="cloud-label">AZURE SERVERLESS PROJECT</p>
+            <h1>Task Tracker</h1>
+            <p class="subtitle">
+                A serverless task management application built on Microsoft Azure.
+            </p>
+        </header>
+
+        <section class="task-card">
+
+            <form id="task-form">
+
+                <input
+                    id="task-input"
+                    type="text"
+                    placeholder="Enter a new task..."
+                    maxlength="100"
+                    required
+                >
+
+                <button type="submit">
+                    Add Task
+                </button>
+
+            </form>
+
+            <p id="status-message"></p>
+
+            <ul id="task-list"></ul>
+
+        </section>
+
+        <footer>
+            Built with Azure Static Web Apps, Azure Functions and Cosmos DB.
+        </footer>
+
+    </main>
+
+    <script src="app.js"></script>
+
+</body>
+</html>
