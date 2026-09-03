@@ -106,3 +106,51 @@ footer {
     font-size: 13px;
     color: #9ca3af;
 }
+
+.auth-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.auth-label {
+    margin: 0 0 5px 0;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    color: #6b7280;
+}
+
+#user-name {
+    margin: 0;
+    font-weight: bold;
+}
+
+.auth-button {
+    display: inline-block;
+    text-decoration: none;
+    background: #0078d4;
+    color: white;
+    padding: 11px 16px;
+    border-radius: 6px;
+}
+
+.logout-button {
+    background: #374151;
+}
+
+#auth-message {
+    color: #6b7280;
+    margin-bottom: 20px;
+}
+
+[hidden] {
+    display: none !important;
+}

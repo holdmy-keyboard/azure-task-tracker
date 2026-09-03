@@ -1,12 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Azure Task-Tracker</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="styles.css">
+    <title>
+        Azure Task Tracker
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="styles.css"
+    >
+
 </head>
 
 <body>
@@ -14,14 +26,73 @@
     <main class="container">
 
         <header>
-            <p class="cloud-label">AZURE SERVERLESS PROJECT</p>
-            <h1>Azure Task Tracker</h1>
-            <p class="subtitle">
-                A serverless task management application built on Microsoft Azure.
+
+            <p class="cloud-label">
+                AZURE SERVERLESS PROJECT
             </p>
+
+            <h1>
+                Azure Task Tracker
+            </h1>
+
+            <p class="subtitle">
+                A secure serverless task management
+                application built on Microsoft Azure.
+            </p>
+
         </header>
 
-        <section class="task-card">
+
+        <!-- Authentication section -->
+
+        <section class="auth-card">
+
+            <div>
+
+                <p class="auth-label">
+                    ACCOUNT
+                </p>
+
+                <p id="user-name">
+                    Not signed in
+                </p>
+
+            </div>
+
+
+            <a
+                id="login-button"
+                class="auth-button"
+                href="/.auth/login/aad"
+            >
+                Sign in with Microsoft
+            </a>
+
+
+            <a
+                id="logout-button"
+                class="auth-button logout-button"
+                href="/.auth/logout"
+                hidden
+            >
+                Sign out
+            </a>
+
+        </section>
+
+
+        <p id="auth-message">
+            Sign in with Microsoft to manage your private tasks.
+        </p>
+
+
+        <!-- Task application -->
+
+        <section
+            class="task-card"
+            id="task-card"
+            hidden
+        >
 
             <form id="task-form">
 
@@ -39,19 +110,28 @@
 
             </form>
 
+
             <p id="status-message"></p>
+
 
             <ul id="task-list"></ul>
 
         </section>
 
+
         <footer>
-            Built with Azure Static Web Apps, Azure Functions and Cosmos DB.
+
+            Built with Azure Static Web Apps,
+            Azure Functions, Microsoft Entra ID
+            and Cosmos DB.
+
         </footer>
 
     </main>
 
+
     <script src="app.js"></script>
 
 </body>
+
 </html>

@@ -89,7 +89,7 @@ The frontend communicates with the backend through `/api/tasks`.
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/api/tasks` | Retrieve all tasks, ordered by creation time. |
+| `GET` | `/api/tasks` | Retrieve the authenticated user's tasks, ordered by creation time. |
 | `POST` | `/api/tasks` | Create a new task. |
 | `PATCH` | `/api/tasks/{id}` | Update the completion state of a task. |
 | `DELETE` | `/api/tasks/{id}` | Delete a task. |
@@ -104,7 +104,7 @@ Request body:
 }
 ```
 
-A newly created task is stored with a generated UUID, a default `completed` value of `false`, and a creation timestamp.
+A newly created task is stored with the authenticated user's `userID`, a generated UUID, a default `completed` value of `false`, and a creation timestamp.
 
 ### Update Task
 
@@ -123,6 +123,7 @@ A task is stored in Cosmos DB in the following general format:
 ```json
 {
   "id": "generated-uuid",
+  "userID": "static-web-apps-user-id",
   "title": "Learn Azure Functions",
   "completed": false,
   "createdAt": "ISO-8601-timestamp",
@@ -130,7 +131,7 @@ A task is stored in Cosmos DB in the following general format:
 }
 ```
 
-`updatedAt` is added when a task is modified.
+`userID` is the authenticated Azure Static Web Apps user identifier and the Cosmos DB partition-key value. `updatedAt` is added when a task is modified.
 
 
 ## Local Development
@@ -181,11 +182,23 @@ Do **not** commit `local.settings.json` or Cosmos DB credentials to source contr
 
 ### Cosmos DB Container Requirement
 
-The API reads, updates, and deletes items using the task ID as both the document ID and partition-key value. Configure the Cosmos DB container with:
+The API stores every task in its authenticated user's logical partition. The partition-key path is case-sensitive and must match the `userID` document property exactly:
 
 ```text
-Partition key: /id
+Partition key: /userID
 ```
+
+The application validates this path when connecting to Cosmos DB and fails fast if its spelling or capitalization differs.
+
+If an older version wrote lowercase `userId` properties into this container, stop all task writes for the duration of the migration. Then preview and run the included case migration from the `api` directory:
+
+```bash
+npm run migrate:user-id-case
+npm run migrate:user-id-case -- --apply --confirm-writes-disabled
+npm run migrate:user-id-case
+```
+
+The apply step creates and verifies correctly partitioned copies before conditionally removing legacy items. Resume application writes only after the final dry run reports zero legacy tasks.
 
 ### 4. Run the Full Application Locally
 
