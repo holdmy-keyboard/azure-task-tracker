@@ -1,160 +1,304 @@
 # Azure Task Tracker
 
-A lightweight **serverless task management application built on Microsoft Azure**. The project demonstrates a complete cloud-native CRUD workflow using **Azure Static Web Apps**, **Azure Functions**, **Azure Cosmos DB**, and **GitHub Actions CI/CD**.
+A secure, serverless task management application built on Microsoft Azure.
 
-Users can create tasks, view persisted tasks, mark tasks as complete, and delete them through a simple browser-based interface backed by a serverless REST API.
+The project started as a simple Azure CRUD application and was extended with **Microsoft Entra ID authentication**, **user-specific task isolation**, a **dedicated Azure Function App**, **Managed Identity**, **Azure RBAC**, **passwordless Cosmos DB access**, **Application Insights**, **GitHub Actions CI/CD**, and **Azure Cost Management**.
+
+> **Live application:** https://witty-cliff-003a3f610.5.azurestaticapps.net
+
+---
+
+## Features
+
+- Create tasks
+- View saved tasks
+- Mark tasks as complete or incomplete
+- Delete tasks
+- Persist task data in Azure Cosmos DB
+- Sign in and sign out with a Microsoft account
+- Restrict the API to authenticated users
+- Keep each user's tasks private and isolated
+- Store tasks using `/userId` as the Cosmos DB partition key
+- Run the REST API in a dedicated Azure Function App
+- Use a system-assigned Managed Identity for the Function App
+- Access Cosmos DB without storing account keys or production connection strings
+- Authorize Cosmos DB access with Azure RBAC
+- Automatically deploy frontend changes with GitHub Actions
+- Monitor the application with Application Insights
+- Track project spending with Azure Cost Management and budget alerts
+
+---
 
 ## Architecture
 
 ![Azure Task Tracker Architecture](./docs/architecture.png)
 
-### Request Flow
-
-1. The browser loads the static frontend from Azure Static Web Apps.
-2. Frontend JavaScript sends requests to `/api/tasks`.
-3. Azure Functions handles the REST API operations.
-4. Azure Cosmos DB stores and retrieves task data.
-5. GitHub Actions automatically deploys changes from the repository to Azure Static Web Apps.
-
-## Features
-
-- Create new tasks.
-- Retrieve all stored tasks.
-- Mark tasks as completed or incomplete.
-- Delete tasks.
-- Persist task data in Azure Cosmos DB.
-- Serverless HTTP API using Azure Functions.
-- Static frontend hosted with Azure Static Web Apps.
-- Automatic CI/CD deployment through GitHub Actions.
-- Runtime configuration stored outside source code through environment variables.
-- Responsive, dependency-free frontend using vanilla HTML, CSS, and JavaScript.
-
-## Screenshots
-
-### 1. Live Application
-
-The deployed Azure Task Tracker running through Azure Static Web Apps.
-The frontend communicates with the Azure Functions API to create, update, retrieve, and delete tasks.
-
-![Azure Task Tracker Live Application](./screenshots/01-live-application.png)
-
 ---
 
-### 2. Azure Resources
+## Azure Services and Technologies
 
-The Azure resources used by the project, including Azure Static Web Apps and Azure Cosmos DB, deployed within the project's Azure resource group.
-
-![Azure Task Tracker Azure Resources](./screenshots/02-azure-resources.png)
-
----
-
-### 3. Azure Static Web App Deployment
-
-Azure Static Web Apps configured with the GitHub repository as the deployment source. Changes pushed to the `main` branch are deployed through the generated GitHub Actions workflow.
-
-![Azure Static Web App Deployment](screenshots/03-static-web-app-deployment.png)
-
----
-
-### 4. Cosmos DB Task Storage
-
-Task data persisted in Azure Cosmos DB. The Azure Portal Data Explorer shows task documents created through the application's Azure Functions API.
-
-![Azure Cosmos DB Task Storage](screenshots/04-cosmos-db-storage.png)
-
-## Azure Services Used
-
-| Service | Purpose |
+| Service / Technology | Purpose |
 |---|---|
-| **Azure Static Web Apps** | Hosts the frontend and integrates it with the serverless API. |
-| **Azure Functions** | Implements the REST API for task CRUD operations. |
-| **Azure Cosmos DB** | Provides persistent NoSQL storage for tasks. |
-| **GitHub Actions** | Builds and deploys the application automatically. |
+| **Azure Static Web Apps - Standard** | Hosts the frontend and proxies authenticated `/api/*` requests |
+| **Microsoft Entra ID** | Authenticates users and Azure workloads |
+| **Azure Functions** | Runs the serverless REST API in a dedicated Function App |
+| **Azure Cosmos DB for NoSQL** | Stores user-specific task documents |
+| **Managed Identity** | Provides passwordless workload authentication for the Function App |
+| **Azure RBAC** | Authorizes the Function App to access Cosmos DB data |
+| **Application Insights** | Provides application monitoring and telemetry |
+| **Azure Cost Management** | Tracks project cost and budget usage |
+| **Azure Storage Account** | Supports the dedicated Azure Function App |
+| **GitHub Actions** | Automatically deploys frontend changes |
+| **JavaScript / Node.js 22** | Frontend and backend application runtime |
+| **HTML / CSS** | User interface |
+| **VS Code** | Local development environment |
+| **Azure CLI** | Azure authentication and administrative tasks |
+| **Azure Functions Core Tools** | Local Azure Functions development |
+| **Azure Static Web Apps CLI** | Local Static Web Apps and authentication emulation |
 
-## Technology Stack
+---
 
-| Layer | Technology |
-|---|---|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Backend | Node.js, Azure Functions v4 |
-| Database | Azure Cosmos DB for NoSQL |
-| Hosting | Azure Static Web Apps |
-| CI/CD | GitHub Actions |
-| API Runtime | Node.js 22 |
-| Source Control | Git / GitHub |
+## Project Structure
 
-## API Endpoints
+```text
+azure-task-tracker/
+│
+├── .github/
+│   └── workflows/
+│       └── azure-static-web-apps-witty-cliff-003a3f610.yml
+│
+├── api/
+│   ├── src/
+│   │   ├── functions/
+│   │   │   └── tasks.js
+│   │   └── index.js
+│   ├── host.json
+│   ├── package.json
+│   └── package-lock.json
+│
+├── docs/
+│
+├── screenshots/
+│   ├── microsoft-sign-in.png
+│   ├── authenticated-task-tracker.png
+│   └── cost-management-budget.png
+│
+├── src/
+│   ├── app.js
+│   ├── index.html
+│   ├── staticwebapp.config.json
+│   └── styles.css
+│
+├── .gitignore
+└── README.md
+```
 
-The frontend communicates with the backend through `/api/tasks`.
+`api/local.settings.json` is intentionally excluded from Git.
 
-| Method | Endpoint | Description |
+---
+
+## Application Functionality
+
+The Task Tracker exposes four API operations.
+
+| Method | Endpoint | Purpose |
 |---|---|---|
-| `GET` | `/api/tasks` | Retrieve the authenticated user's tasks, ordered by creation time. |
-| `POST` | `/api/tasks` | Create a new task. |
-| `PATCH` | `/api/tasks/{id}` | Update the completion state of a task. |
-| `DELETE` | `/api/tasks/{id}` | Delete a task. |
+| `GET` | `/api/tasks` | Retrieve the authenticated user's tasks |
+| `POST` | `/api/tasks` | Create a new task |
+| `PATCH` | `/api/tasks/{id}` | Update a task's completion state |
+| `DELETE` | `/api/tasks/{id}` | Delete a task |
 
-### Create Task
+All `/api/*` routes require an authenticated user.
 
-Request body:
+---
+
+## Microsoft Entra ID Authentication
+
+Authentication is handled through Azure Static Web Apps.
+
+The login route is:
+
+```text
+/.auth/login/aad
+```
+
+The frontend checks the current authenticated identity using:
+
+```text
+/.auth/me
+```
+
+After sign-in, Azure Static Web Apps provides a client principal containing information such as the authenticated `userId`.
+
+The application uses this identity to determine which tasks the user is allowed to access.
+
+### Route protection
+
+`src/staticwebapp.config.json` protects the API:
 
 ```json
 {
-  "title": "Learn Azure Functions"
+  "routes": [
+    {
+      "route": "/api/*",
+      "allowedRoles": [
+        "authenticated"
+      ]
+    }
+  ],
+  "platform": {
+    "apiRuntime": "node:22"
+  }
 }
 ```
 
-A newly created task is stored with the authenticated user's `userID`, a generated UUID, a default `completed` value of `false`, and a creation timestamp.
+This means unauthenticated visitors can load the website, but they cannot use the task API.
 
-### Update Task
+---
 
-Request body:
+## User Data Isolation
 
-```json
-{
-  "completed": true
-}
+The original version of the project used one shared task collection. The application was upgraded so that each authenticated user has private task data.
+
+### Cosmos DB configuration
+
+```text
+Database:      TaskTrackerDB
+Container:     UserTasks
+Partition key: /userId
 ```
 
-## Task Data Model
-
-A task is stored in Cosmos DB in the following general format:
+A task document follows this structure:
 
 ```json
 {
-  "id": "generated-uuid",
-  "userID": "static-web-apps-user-id",
-  "title": "Learn Azure Functions",
+  "id": "task-uuid",
+  "userId": "authenticated-user-id",
+  "title": "Learn Azure Managed Identity",
   "completed": false,
-  "createdAt": "ISO-8601-timestamp",
-  "updatedAt": "ISO-8601-timestamp"
+  "createdAt": "2026-09-04T12:00:00.000Z"
 }
 ```
 
-`userID` is the authenticated Azure Static Web Apps user identifier and the Cosmos DB partition-key value. `updatedAt` is added when a task is modified.
+The API queries tasks using the authenticated user's `userId`.
 
+As a result:
+
+```text
+User A
+  └── User A tasks
+
+User B
+  └── User B tasks
+```
+
+The browser never supplies the authoritative owner ID for a task. The backend derives it from the authenticated client principal.
+
+---
+
+## Passwordless Cosmos DB Authentication
+
+The production API does **not** use a Cosmos DB account key or production connection string.
+
+The dedicated Azure Function App has a **system-assigned Managed Identity**.
+
+```text
+Azure Function App
+        ↓
+Managed Identity
+        ↓
+Microsoft Entra ID
+        ↓
+Azure RBAC
+        ↓
+Azure Cosmos DB
+```
+
+The backend uses:
+
+```javascript
+const { DefaultAzureCredential } = require("@azure/identity");
+
+const credential = new DefaultAzureCredential();
+
+const client = new CosmosClient({
+    endpoint,
+    aadCredentials: credential
+});
+```
+
+`DefaultAzureCredential` allows the same application code to use:
+
+- **Managed Identity** when running in Azure
+- the developer's **Azure CLI identity** during local development
+
+### Cosmos DB RBAC
+
+The Function App is assigned the:
+
+```text
+Cosmos DB Built-in Data Contributor
+```
+
+role for the task-data scope.
+
+This provides the API with the permissions required to create, query, update, and delete task documents without giving it a Cosmos DB account key.
+
+### Key-based authentication disabled
+
+After Managed Identity access was verified, Cosmos DB local/key authentication was disabled:
+
+```text
+disableLocalAuth = true
+```
+
+This prevents old Cosmos DB account keys or connection strings from being used for data access.
+
+---
+
+## Environment Configuration
+
+The production Function App uses non-secret configuration values:
+
+| Variable | Purpose |
+|---|---|
+| `COSMOS_ENDPOINT` | Cosmos DB account endpoint |
+| `COSMOS_DATABASE_NAME` | `TaskTrackerDB` |
+| `COSMOS_CONTAINER_NAME` | `UserTasks` |
+
+Production does **not** require:
+
+```text
+COSMOS_CONNECTION_STRING
+COSMOS_KEY
+COSMOS_PASSWORD
+```
+
+The Function App authenticates using its Managed Identity.
+
+---
 
 ## Local Development
 
 ### Prerequisites
 
-Install or have access to:
+Install:
 
-- Node.js.
-- npm.
-- Azure Static Web Apps CLI.
-- An Azure Cosmos DB account, database, and container.
+- Node.js 22
+- Git
+- VS Code
+- Azure CLI
+- Azure Functions Core Tools v4
+- Azure Static Web Apps CLI
 
-The deployed API is configured for the **Node.js 22** runtime.
-
-### 1. Clone the Repository
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/holdmy-keyboard/azure-task-tracker.git
 cd azure-task-tracker
 ```
 
-### 2. Install API Dependencies
+### 2. Install API dependencies
 
 ```bash
 cd api
@@ -162,142 +306,218 @@ npm install
 cd ..
 ```
 
-### 3. Configure Cosmos DB
+### 3. Sign in to Azure CLI
 
-Create `api/local.settings.json` for local development:
+```bash
+az login
+```
+
+For passwordless local Cosmos DB access, the signed-in developer account must have an appropriate Cosmos DB data-plane RBAC assignment.
+
+### 4. Configure local settings
+
+Create `api/local.settings.json`:
 
 ```json
 {
   "IsEncrypted": false,
   "Values": {
+    "AzureWebJobsStorage": "",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "COSMOS_CONNECTION_STRING": "<your-cosmos-db-connection-string>",
-    "COSMOS_DATABASE_NAME": "<your-database-name>",
-    "COSMOS_CONTAINER_NAME": "<your-container-name>"
+    "COSMOS_ENDPOINT": "https://YOUR-COSMOS-ACCOUNT.documents.azure.com:443/",
+    "COSMOS_DATABASE_NAME": "TaskTrackerDB",
+    "COSMOS_CONTAINER_NAME": "UserTasks"
   }
 }
 ```
 
-Do **not** commit `local.settings.json` or Cosmos DB credentials to source control.
+Do not commit this file.
 
-### Cosmos DB Container Requirement
+### 5. Start the application
 
-The API stores every task in its authenticated user's logical partition. The partition-key path is case-sensitive and must match the `userID` document property exactly:
-
-```text
-Partition key: /userID
-```
-
-The application validates this path when connecting to Cosmos DB and fails fast if its spelling or capitalization differs.
-
-If an older version wrote lowercase `userId` properties into this container, stop all task writes for the duration of the migration. Then preview and run the included case migration from the `api` directory:
+From the repository root:
 
 ```bash
-npm run migrate:user-id-case
-npm run migrate:user-id-case -- --apply --confirm-writes-disabled
-npm run migrate:user-id-case
+swa start src --api-location api
 ```
 
-The apply step creates and verifies correctly partitioned copies before conditionally removing legacy items. Resume application writes only after the final dry run reports zero legacy tasks.
-
-### 4. Run the Full Application Locally
-
-From the repository root, use the Azure Static Web Apps CLI:
-
-```bash
-swa start ./src --api-location ./api
-```
-
-The local Static Web Apps emulator normally serves the application at:
+Open:
 
 ```text
 http://localhost:4280
 ```
 
-The CLI runs the frontend and connects `/api` requests to the Azure Functions backend.
-
-## Deployment
-
-The repository already contains an **Azure Static Web Apps GitHub Actions workflow**.
-
-The workflow is configured to:
-
-- Trigger when code is pushed to `main`.
-- Build and deploy pull-request environments when applicable.
-- Deploy the frontend from `src`.
-- Deploy the Azure Functions API from `api`.
-- Use the repository's Azure Static Web Apps deployment-token secret.
-
-### Required Azure Application Settings
-
-Configure the following values in the Azure Static Web Apps environment:
-
-```text
-COSMOS_CONNECTION_STRING
-COSMOS_DATABASE_NAME
-COSMOS_CONTAINER_NAME
-```
-
-These settings are consumed by the Azure Functions API at runtime and should not be hardcoded in the repository.
-
-## CI/CD Flow
-
-```mermaid
-flowchart LR
-    DEV[Code Change] --> PUSH[Push to main]
-    PUSH --> GHA[GitHub Actions Workflow]
-    GHA --> BUILD[Build Frontend + API]
-    BUILD --> AZURE[Azure Static Web Apps]
-    AZURE --> LIVE[Updated Application]
-```
-
-This provides a basic continuous-deployment pipeline: changes merged or pushed to `main` are automatically packaged and deployed to Azure.
-
-## Security Notes
-
-The project already keeps Azure deployment credentials and Cosmos DB configuration outside the application source code. The GitHub Actions workflow consumes the Azure Static Web Apps deployment token through GitHub Secrets, while the API reads Cosmos DB settings from environment variables.
-
-The current task API uses **anonymous HTTP access**. This is appropriate for the present portfolio/demo scope but means the CRUD endpoints are not protected by user authentication.
-
-For a production-oriented version, the next security improvements would be:
-
-- Add authentication through Microsoft Entra ID / Azure Static Web Apps authentication.
-- Add authorization so users can access only their own tasks.
-- Replace Cosmos DB connection-string authentication with Managed Identity and Cosmos DB RBAC.
-- Add stricter server-side input validation.
-- Add API monitoring, structured logging, and alerting.
-- Add automated tests before deployment.
-
-## What This Project Demonstrates
-
-This project was built to demonstrate practical Azure cloud engineering skills rather than only frontend development. It covers:
-
-- **Serverless architecture** using managed Azure services.
-- **REST API development** with Azure Functions.
-- **NoSQL data persistence** with Cosmos DB.
-- **Frontend-to-serverless API integration** through Azure Static Web Apps.
-- **Environment-based secret and configuration management**.
-- **CI/CD automation** with GitHub Actions.
-- **Cloud-native CRUD application design**.
-
-## Future Improvements
-
-Potential extensions include:
-
-- Microsoft Entra ID authentication.
-- Per-user task isolation.
-- Managed Identity for Cosmos DB access.
-- Task due dates and priorities.
-- Search and filtering.
-- Application Insights monitoring.
-- Infrastructure as Code using Bicep or Terraform.
-- Automated API and integration tests.
-- Separate development and production environments.
-
-## Project Status
-
-**Functional portfolio project** — core task CRUD functionality, Cosmos DB persistence, Azure Functions integration, Azure Static Web Apps hosting, and GitHub Actions deployment are implemented.
+The Static Web Apps CLI provides a local authentication emulator for development.
 
 ---
 
-Built as an Azure cloud engineering portfolio project focused on serverless application architecture, managed cloud services, and CI/CD.
+## Deployment and CI/CD
+
+### Frontend
+
+The frontend is deployed to Azure Static Web Apps using **GitHub Actions**.
+
+The deployment workflow uses:
+
+```yaml
+app_location: "src"
+api_location: ""
+output_location: ""
+```
+
+The empty `api_location` is intentional.
+
+The API was moved out of the managed Static Web Apps backend and into a **dedicated Azure Function App**.
+
+The workflow is therefore responsible for the frontend deployment, while Static Web Apps forwards `/api/*` requests to the linked Function App.
+
+### Backend
+
+The API is deployed separately to:
+
+```text
+Dedicated Azure Function App
+```
+
+The Function App is linked to the production Static Web App as its API backend.
+
+The backend then uses:
+
+```text
+Managed Identity
+    ↓
+Microsoft Entra ID
+    ↓
+Azure RBAC
+    ↓
+Cosmos DB
+```
+
+instead of a Cosmos DB connection string.
+
+---
+
+
+## Cost Management
+
+All project resources are grouped under:
+
+```text
+rg-azure-task-tracker
+```
+
+Azure Cost Management is configured at this resource-group scope so project spending can be monitored separately.
+
+### Budget
+
+```text
+Monthly budget: €20
+```
+
+Budget notifications are configured for:
+
+| Alert | Threshold |
+|---|---:|
+| Actual cost | 50% |
+| Actual cost | 75% |
+| Actual cost | 90% |
+| Actual cost | 100% |
+| Forecasted cost | 100% |
+
+Azure Cost Analysis is also used to review spending by service and individual resource.
+
+> Azure budgets provide monitoring and notifications. Reaching the budget threshold does not automatically stop Azure resources.
+
+---
+
+## Screenshots
+
+### Microsoft authentication
+
+Unauthenticated users must sign in with Microsoft before accessing their private task data.
+
+![Microsoft sign-in](screenshots/microsoft-sign-in.png)
+
+### Authenticated Task Tracker
+
+After authentication, a user can create, complete, and delete tasks. The displayed tasks belong only to the signed-in account.
+
+![Authenticated Azure Task Tracker](screenshots/authenticated-task-tracker.png)
+
+### Azure Cost Management
+
+The project Resource Group is monitored with Azure Cost Management and a €20 monthly budget.
+
+![Azure Cost Management budget](screenshots/cost-management-budget.png)
+
+---
+
+## Security Design
+
+The application uses separate identity controls for **users** and **Azure workloads**.
+
+### User identity
+
+```text
+User
+ ↓
+Microsoft Entra ID
+ ↓
+Azure Static Web Apps
+ ↓
+Authenticated role
+ ↓
+Azure Function API
+```
+
+This establishes who is using the application.
+
+### Workload identity
+
+```text
+Azure Function App
+ ↓
+System-assigned Managed Identity
+ ↓
+Microsoft Entra ID
+ ↓
+Cosmos DB RBAC
+ ↓
+UserTasks
+```
+
+This establishes which Azure workload is allowed to access the database.
+
+### Security controls implemented
+
+- Microsoft Entra ID user authentication
+- Authenticated-only API routes
+- User-specific task ownership
+- `/userId` Cosmos DB partitioning
+- Server-side user identity enforcement
+- System-assigned Managed Identity
+- Passwordless Cosmos DB authentication
+- Cosmos DB data-plane RBAC
+- Least-privilege authorization scope
+- Cosmos DB local/key authentication disabled
+- Sensitive local settings excluded with `.gitignore`
+
+---
+
+## Current Security and Cloud Architecture Summary
+
+| Area | Implementation |
+|---|---|
+| Frontend hosting | Azure Static Web Apps - Standard |
+| User authentication | Microsoft Entra ID |
+| API authorization | Static Web Apps `authenticated` role |
+| Backend | Dedicated Azure Function App |
+| Database | Azure Cosmos DB for NoSQL |
+| User isolation | `/userId` partitioning |
+| Workload identity | System-assigned Managed Identity |
+| Database authorization | Cosmos DB RBAC |
+| Database credentials | Passwordless - no production Cosmos DB key |
+| Monitoring | Application Insights |
+| CI/CD | GitHub Actions |
+| Cost governance | Azure Cost Management + €20 monthly budget |
+
