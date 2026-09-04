@@ -4,8 +4,10 @@ const { app } =
 const { CosmosClient } =
     require("@azure/cosmos");
 
-const { DefaultAzureCredential } =
-    require("@azure/identity");
+const {
+    DefaultAzureCredential,
+    AzureCliCredential
+} = require("@azure/identity");
 
 const crypto =
     require("crypto");
@@ -60,7 +62,9 @@ function getContainer() {
 
 
     const credential =
-        new DefaultAzureCredential();
+        process.env.WEBSITE_INSTANCE_ID
+            ? new DefaultAzureCredential()
+            : new AzureCliCredential();
 
 
     const client =
