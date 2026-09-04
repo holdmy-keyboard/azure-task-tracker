@@ -4,6 +4,9 @@ const { app } =
 const { CosmosClient } =
     require("@azure/cosmos");
 
+const { DefaultAzureCredential } =
+    require("@azure/identity");
+
 const crypto =
     require("crypto");
 
@@ -26,7 +29,7 @@ COSMOS DB CONNECTION
 --------------------------------
 */
 
-async function getContainer() {
+function getContainer() {
 
     if (cachedContainer) {
 
@@ -34,8 +37,8 @@ async function getContainer() {
     }
 
 
-    const connectionString =
-        process.env.COSMOS_CONNECTION_STRING;
+    const endpoint =
+        process.env.COSMOS_ENDPOINT;
 
     const databaseName =
         process.env.COSMOS_DATABASE_NAME;
@@ -45,42 +48,37 @@ async function getContainer() {
 
 
     if (
-        !connectionString ||
+        !endpoint ||
         !databaseName ||
         !containerName
     ) {
 
         throw new Error(
-            "Cosmos DB environment variables are missing."
+            "Cosmos DB configuration is missing."
         );
     }
 
 
+    const credential =
+        new DefaultAzureCredential();
+
+
     const client =
-        new CosmosClient(
-            connectionString
-        );
+        new CosmosClient({
 
+            endpoint:
+                endpoint,
 
-    const container =
-        client
-            .database(databaseName)
-            .container(containerName);
+            aadCredentials:
+                credential
 
-
-    const {
-        resource:
-        containerResource
-    } = await container.read();
-
-
-    assertTaskContainerPartitionKey(
-        containerResource
-    );
+        });
 
 
     cachedContainer =
-        container;
+        client
+            .database(databaseName)
+            .container(containerName);
 
 
     return cachedContainer;

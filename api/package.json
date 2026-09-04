@@ -9,7 +9,8 @@
   },
   "dependencies": {
     "@azure/cosmos": "^4.10.0",
-    "@azure/functions": "^4.0.0"
+    "@azure/functions": "^4.0.0",
+    "@azure/identity": "^4.13.2"
   },
   "main": "src/{index.js,functions/*.js}"
 }
